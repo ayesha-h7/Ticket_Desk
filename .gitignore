@@ -24,3 +24,12 @@ uploads/
 # OS
 .DS_Store
 Thumbs.db
+
+# Terraform working directory
+infrastructure/.terraform/
+
+# Terraform state
+infrastructure/*.tfstate
+infrastructure/*.tfstate.*
+
+infrastructure/.terraform.lock.hcl
