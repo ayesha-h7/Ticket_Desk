@@ -1,7 +1,15 @@
-venv/
 __pycache__/
-*.pyc
+*.py[cod]
+venv/
+.venv/
 .git/
 .gitignore
+*.db
+*.sqlite
+*.sqlite3
+uploads/
 .env
 .env.*
+.vscode/
+.idea/
+README.md
