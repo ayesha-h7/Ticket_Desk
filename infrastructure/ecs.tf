@@ -15,9 +15,12 @@ resource "aws_ecs_task_definition" "api" {
   memory = "1024"
 
   execution_role_arn = aws_iam_role.ecs_task_execution.arn
+  task_role_arn      = aws_iam_role.ecs_task.arn
 
   depends_on = [
-    aws_cloudwatch_log_group.api
+    aws_cloudwatch_log_group.api,
+    aws_iam_role_policy.ecs_task_parameters,
+    aws_iam_role_policy.ecs_task_secret
   ]
 
   container_definitions = jsonencode([
@@ -43,6 +46,28 @@ resource "aws_ecs_task_definition" "api" {
           "awslogs-stream-prefix" = "ecs"
         }
       }
+      secrets = [
+        {
+          name      = "DB_PASSWORD"
+          valueFrom = "${aws_db_instance.postgres.master_user_secret[0].secret_arn}:password::"
+        },
+        {
+          name      = "DB_HOST"
+          valueFrom = aws_ssm_parameter.db_host.arn
+        },
+        {
+          name      = "DB_PORT"
+          valueFrom = aws_ssm_parameter.db_port.arn
+        },
+        {
+          name      = "DB_NAME"
+          valueFrom = aws_ssm_parameter.db_name.arn
+        },
+        {
+          name      = "DB_USER"
+          valueFrom = aws_ssm_parameter.db_user.arn
+        }
+      ]
     }
   ])
 

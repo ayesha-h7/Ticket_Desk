@@ -25,3 +25,15 @@ variable "image_tag" {
   description = "Git commit SHA used as the Docker image tag"
   type        = string
 }
+
+variable "db_name" {
+  description = "PostgreSQL database name"
+  type        = string
+  default     = "ticketdesk"
+}
+
+variable "db_username" {
+  description = "PostgreSQL master username"
+  type        = string
+  default     = "ticketdesk_admin"
+}
