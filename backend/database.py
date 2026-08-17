@@ -31,6 +31,10 @@ def get_connection():
     conn.execute("PRAGMA foreign_keys=ON")
     return conn
 
+def _serialize_datetime(value):
+    if hasattr(value, "isoformat"):
+        return value.isoformat()
+    return value
 
 def init_db() -> None:
     UPLOADS_DIR.mkdir(exist_ok=True)
@@ -162,6 +166,8 @@ def db_get_ticket(ticket_id: int):
         return None
 
     ticket = dict(ticket)
+    ticket["created_at"] = _serialize_datetime(ticket.get("created_at"))
+    ticket["updated_at"] = _serialize_datetime(ticket.get("updated_at"))
 
     comments = conn.execute(
         f"""
@@ -183,8 +189,24 @@ def db_get_ticket(ticket_id: int):
         (ticket_id,),
     ).fetchall()
 
-    ticket["comments"] = [dict(r) for r in comments]
-    ticket["attachments"] = [dict(r) for r in attachments]
+    ticket["comments"] = []
+    for row in conn.execute(
+        "SELECT * FROM comments WHERE ticket_id = ? ORDER BY created_at ASC",
+        (ticket_id,),
+    ).fetchall():
+        comment = dict(row)
+        comment["created_at"] = _serialize_datetime(comment.get("created_at"))
+        ticket["comments"].append(comment)
+
+    
+    ticket["attachments"] = []
+    for row in conn.execute(
+        "SELECT * FROM attachments WHERE ticket_id = ? ORDER BY uploaded_at ASC",
+        (ticket_id,),
+    ).fetchall():
+        attachment = dict(row)
+        attachment["uploaded_at"] = _serialize_datetime(attachment.get("uploaded_at"))
+        ticket["attachments"].append(attachment)
 
     conn.close()
 
